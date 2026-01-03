@@ -2,7 +2,31 @@ import Post from '../models/postModel.js';
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find({}).sort({ createdAt: -1 }).populate('user', 'name');
+    const { lat, lng, dist, excludeId } = req.query;
+
+    let query = {};
+
+    if (lat && lng) {
+      const maxDistance = dist ? Number(dist) * 1000 : 10000; // Default 10km
+      query.location = {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [Number(lng), Number(lat)],
+          },
+          $maxDistance: maxDistance,
+        },
+      };
+    }
+
+    if (excludeId) {
+      query.user = { $ne: excludeId };
+    }
+
+    const posts = await Post.find(query)
+      .sort({ createdAt: -1 })
+      .populate('user', 'name'); 
+
     res.json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
