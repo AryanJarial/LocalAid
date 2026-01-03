@@ -12,8 +12,14 @@ const Navbar = () => {
             <div>
                 {user ? (
                     <>
+                    <Link 
+                        to="/create-post" 
+                        className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-4 font-bold text-sm"
+                    >
+                        + Create Post
+                    </Link>
                     <span className="mr-4">Hello, {user.name}</span>
-                    <button 
+                    <button
                         onClick={logout} 
                         className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm"
                     >
