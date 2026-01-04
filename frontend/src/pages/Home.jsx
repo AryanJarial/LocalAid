@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { io } from 'socket.io-client';
+import Map from '../components/Map';
 
 const socket = io('http://localhost:5000', {
   autoConnect: true,
@@ -41,17 +42,6 @@ const Home = () => {
     );
 
     const socket = io('http://localhost:5000');
-
-    socket.on('connect', () => {
-      console.log('✅ Connected to Socket.io Server with ID:', socket.id);
-    });
-
-    // DEBUG: Check if we receive the event (even if we filter it out)
-    socket.on('new-post', (newPost) => {
-      console.log('📩 Received new post signal:', newPost); // <--- LOOK FOR THIS IN CONSOLE
-      
-      // ... existing filter logic ...
-    });
 
     socket.on('new-post', (newPost) => {
       if (user && newPost.user._id !== user._id) {
@@ -108,7 +98,7 @@ const Home = () => {
         </h1>
         {userLocation && (
           <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-            📍 Showing posts within 10km
+            📍 {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
           </span>
         )}
       </div>
@@ -117,6 +107,10 @@ const Home = () => {
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
           <p>{locationError}</p>
         </div>
+      )}
+
+      {userLocation && !loading && (
+        <Map posts={posts} userLocation={userLocation} />
       )}
 
       {loading ? (
