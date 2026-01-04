@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 
 const getPosts = async (req, res) => {
   try {
-    const { lat, lng, dist, excludeId } = req.query;
 
+    const { lat, lng, dist, excludeId, type, search } = req.query;
     let query = {};
 
-    if (lat && lng) {
+    if (lat && lng && lat !== 'undefined' && lng !== 'undefined') {
       const maxDistance = dist ? Number(dist) * 1000 : 10000; // Default 10km
       query.location = {
         $near: {
@@ -22,6 +22,18 @@ const getPosts = async (req, res) => {
 
     if (excludeId && mongoose.Types.ObjectId.isValid(excludeId)) {
         query.user = { $ne: new mongoose.Types.ObjectId(excludeId) };
+    }
+
+    if (type && type !== 'all') {
+      query.type = type;
+    }
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },       // 'i' makes it case-insensitive
+        { description: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } }
+      ];
     }
 
     const posts = await Post.find(query)
