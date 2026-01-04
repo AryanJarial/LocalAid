@@ -6,10 +6,6 @@ import AuthContext from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import Map from '../components/Map';
 
-const socket = io('http://localhost:5000', {
-  autoConnect: true,
-});
-
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +13,9 @@ const Home = () => {
   const [userLocation, setUserLocation] = useState(null);
 
   const [incomingPost, setIncomingPost] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
 
   const { user } = useContext(AuthContext); 
 
@@ -45,10 +44,11 @@ const Home = () => {
 
     socket.on('new-post', (newPost) => {
       if (user && newPost.user._id !== user._id) {
-         setPosts((prevPosts) => [newPost, ...prevPosts]);
-         
-         setIncomingPost(true);
-         setTimeout(() => setIncomingPost(false), 3000);
+         if (filterType === 'all' || newPost.type === filterType) {
+            setPosts((prevPosts) => [newPost, ...prevPosts]);
+            setIncomingPost(true);
+            setTimeout(() => setIncomingPost(false), 3000);
+         }
       }
     });
 
@@ -65,7 +65,8 @@ const Home = () => {
   }, [userLocation, user]);
 
 
-  const fetchPosts = async (lat, lng) => {
+  const fetchPosts = async (lat, lng, search, type) => {
+    setLoading(true);
     try {
       let url = '/api/posts';
       
@@ -80,12 +81,22 @@ const Home = () => {
         params.append('excludeId', user._id);
       }
 
+      if (search) params.append('search', search);
+      if (type && type !== 'all') params.append('type', type);
+
       const { data } = await axios.get(`${url}?${params.toString()}`);
       setPosts(data);
       setLoading(false);
     } catch (error) {
       console.error(error);
       setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (userLocation) {
+      fetchPosts(userLocation.lat, userLocation.lng, searchTerm, filterType);
     }
   };
 
@@ -103,6 +114,39 @@ const Home = () => {
         )}
       </div>
 
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+        <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+          
+          {/* Search Input */}
+          <input 
+            type="text" 
+            placeholder="Search keywords (e.g., Blood, Plumber)..." 
+            className="flex-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          {/* Filter Dropdown */}
+          <select 
+            className="p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="request">Requests Only</option>
+            <option value="offer">Offers Only</option>
+          </select>
+
+          {/* Search Button */}
+          <button 
+            type="submit" 
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition-colors"
+          >
+            Search
+          </button>
+        </form>
+      </div>
+
       {locationError && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
           <p>{locationError}</p>
@@ -116,12 +160,18 @@ const Home = () => {
       {loading ? (
         <p className="text-center text-gray-500">Scanning your area...</p>
       ) : posts.length === 0 ? (
-        <div className="text-center mt-20">
-            <p className="text-xl text-gray-600">No other posts found nearby.</p>
-            <p className="text-gray-500 mt-2">
-               (Your own posts are hidden from this feed)
-            </p>
-            <Link to="/create-post" className="text-blue-500 underline mt-4 block">Create a Post</Link>
+        <div className="text-center mt-10 p-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <p className="text-xl text-gray-600">No posts found matching your criteria.</p>
+            <button 
+              onClick={() => {
+                setSearchTerm('');
+                setFilterType('all');
+                if(userLocation) fetchPosts(userLocation.lat, userLocation.lng, '', 'all');
+              }}
+              className="text-blue-500 underline mt-2"
+            >
+              Clear filters
+            </button>
         </div>
       ) : (
 
