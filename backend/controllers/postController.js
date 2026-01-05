@@ -1,5 +1,6 @@
 import Post from '../models/postModel.js';
 import mongoose from 'mongoose';
+import OpenAI from 'openai';
 
 const getPosts = async (req, res) => {
   try {
@@ -104,4 +105,64 @@ const getMyPosts = async (req, res) => {
   }
 };
 
-export { getPosts, createPost, deletePost, getMyPosts };
+const getTrendSummary = async (req, res) => {
+  try {
+    const { lat, lng, excludeId } = req.query; 
+
+    const query = {
+      type: 'request', 
+      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } 
+    };
+
+    if (lat && lng) {
+      query.location = {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [Number(lng), Number(lat)] },
+          $maxDistance: 10000 
+        }
+      };
+    }
+
+    if (excludeId) {
+      query.user = { $ne: excludeId };
+    }
+
+    const posts = await Post.find(query).limit(20).select('title category');
+    
+    if (posts.length === 0) {
+      return res.json({ summary: "No recent activity from others to summarize." });
+    }
+
+    const postTitles = posts.map(p => `- ${p.title} (${p.category})`).join('\n');
+
+    if (!process.env.OPENAI_API_KEY) {
+      console.log("No OpenAI Key found. Using Mock AI.");
+      
+      const categories = {};
+      posts.forEach(p => { categories[p.category] = (categories[p.category] || 0) + 1; });
+      const topCategory = Object.keys(categories).sort((a,b) => categories[b] - categories[a])[0];
+
+      return res.json({ 
+        summary: `(Mock AI): There is a high demand for ${topCategory} in your area. Residents are actively looking for help with ${posts[0].title} and similar items.` 
+      });
+    }
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: "system", content: "You are a helpful community assistant." },
+        { role: "user", content: `Here are recent help requests in this neighborhood:\n${postTitles}\n\nSummarize the top 3 most critical needs in 1 short sentence. Don't mention names.` }
+      ],
+      model: "gpt-3.5-turbo",
+    });
+
+    res.json({ summary: completion.choices[0].message.content });
+
+  } catch (error) {
+    console.error("AI Error:", error);
+    res.status(500).json({ message: "Unable to generate summary." });
+  }
+};
+
+export { getPosts, createPost, deletePost, getMyPosts, getTrendSummary };
