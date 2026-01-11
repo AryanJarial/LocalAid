@@ -36,15 +36,29 @@ const io = new Server(httpServer, {
   }
 });
 
+app.set('socketio', io);
+
 io.on('connection', (socket) => {
-  console.log('A user connected via Socket.io:', socket.id);
+  console.log('Connected to socket.io');
+
+  socket.on('setup', (userData) => {
+    socket.join(userData._id);
+    console.log("User Joined Room:", userData._id);
+    socket.emit('connected');
+  });
+
+  socket.on('join chat', (room) => {
+    socket.join(room);
+    console.log("User Joined Chat:", room);
+  });
+
+  socket.on('typing', (room) => socket.in(room).emit('typing'));
+  socket.on('stop typing', (room) => socket.in(room).emit('stop typing'));
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    console.log("USER DISCONNECTED");
   });
 });
-
-app.set('socketio', io);
 
 const PORT = process.env.PORT || 5000;
 
