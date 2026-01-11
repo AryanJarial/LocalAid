@@ -39,7 +39,7 @@ const getPosts = async (req, res) => {
 
     const posts = await Post.find(query)
       .sort({ createdAt: -1 })
-      .populate('user', 'name'); 
+      .populate('user', 'name profilePicture'); 
 
     res.json(posts);
   } catch (error) {
@@ -66,7 +66,7 @@ const createPost = async (req, res) => {
 
     const createdPost = await post.save();
 
-    const fullPost = await Post.findById(createdPost._id).populate('user', 'name');
+    const fullPost = await Post.findById(createdPost._id).populate('user', 'name profilePicture');
 
     const io = req.app.get('socketio');
     
