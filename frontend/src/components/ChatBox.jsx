@@ -2,16 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import { io } from 'socket.io-client';
+import { Send, Paperclip, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 
-const ENDPOINT = "http://localhost:5000"; 
+const ENDPOINT = "http://localhost:5000";
 var socket;
 
 const ChatBox = ({ user, selectedChat }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  
-  // Image Upload States
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -39,7 +39,7 @@ const ChatBox = ({ user, selectedChat }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       if (!selectedChat) return;
-      selectedChatRef.current = selectedChat; 
+      selectedChatRef.current = selectedChat;
       setLoading(true);
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
@@ -59,30 +59,30 @@ const ChatBox = ({ user, selectedChat }) => {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-        setSelectedFile(file);
-        setPreviewUrl(URL.createObjectURL(file));
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const clearImage = () => {
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const sendMessage = async (e) => {
-    if ((e.key === "Enter" || e.type === "click") && (newMessage || selectedFile)) {
+    if ((!e || e.key === "Enter" || e.type === "click") && (newMessage || selectedFile)) {
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         let imageUrl = "";
 
         if (selectedFile) {
-            setIsUploading(true);
-            const formData = new FormData();
-            formData.append('image', selectedFile);
-            const uploadRes = await axios.post('/api/upload/message', formData, config);
-            imageUrl = uploadRes.data.imageUrl;
-            setIsUploading(false);
+          setIsUploading(true);
+          const formData = new FormData();
+          formData.append('image', selectedFile);
+          const uploadRes = await axios.post('/api/upload/message', formData, config);
+          imageUrl = uploadRes.data.imageUrl;
+          setIsUploading(false);
         }
 
         const msgData = {
@@ -99,62 +99,124 @@ const ChatBox = ({ user, selectedChat }) => {
       } catch (error) {
         console.error("Failed to send", error);
         setIsUploading(false);
+        alert("Failed to send message");
       }
     }
   };
 
   if (!selectedChat) {
-    return <div className="flex justify-center items-center h-full text-gray-500">Select a chat</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-gray-400">
+        <div className="text-6xl mb-4">💬</div>
+        <p>Select a chat to start messaging</p>
+      </div>
+    );
   }
 
-  const otherUser = selectedChat.members.find(m => m._id !== user._id) || selectedChat.members[0];
-
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-      
-      <div className="bg-gray-100 p-4 border-b flex items-center">
-        <img src={otherUser?.profilePicture} className="w-10 h-10 rounded-full mr-3 object-cover"/>
-        <h2 className="font-bold text-gray-700">{otherUser?.name}</h2>
-      </div>
+    <div className="flex flex-col h-full bg-gray-50/50">
 
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        {loading ? <p className="text-center">Loading...</p> : (
-            <ScrollToBottom className="h-full">
-                {messages.map((m) => (
-                    <div key={m._id} className={`flex mb-4 ${m.sender._id === user._id ? "justify-end" : "justify-start"}`}>
-                        <div className={`px-4 py-2 rounded-lg max-w-[75%] ${m.sender._id === user._id ? "bg-blue-600 text-white" : "bg-white border text-gray-800"}`}>
-                            {m.image && <img src={m.image} className="max-w-full rounded mb-2"/>}
-                            {m.text && <p>{m.text}</p>}
-                        </div>
-                    </div>
-                ))}
-            </ScrollToBottom>
+      <div className="flex-1 overflow-hidden relative">
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-blue-500">
+            <Loader2 className="w-10 h-10 animate-spin" />
+          </div>
+        ) : (
+          <ScrollToBottom className="h-full w-full px-4 py-4 custom-scrollbar">
+            {messages.map((m) => {
+              const isMyMessage = m.sender._id === user._id;
+              return (
+                <div key={m._id} className={`flex mb-4 ${isMyMessage ? "justify-end" : "justify-start"}`}>
+
+                  {!isMyMessage && (
+                    <img
+                      src={m.sender.profilePicture || "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"}
+                      className="w-8 h-8 rounded-full mr-2 self-end mb-1 border border-gray-200"
+                      alt="sender"
+                    />
+                  )}
+
+                  <div className={`relative px-4 py-2.5 max-w-[75%] shadow-sm ${isMyMessage
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl rounded-br-none"
+                      : "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-none"
+                    }`}>
+                    {m.image && (
+                      <div className="mb-2 overflow-hidden rounded-lg border border-black/10">
+                        <img
+                          src={m.image}
+                          className="max-h-48 w-auto object-contain bg-gray-100"
+                          alt="attachment"
+                        />
+                      </div>
+                    )}
+                    {m.text && <p className="leading-relaxed text-sm md:text-base break-words">{m.text}</p>}
+
+                    <p className={`text-[10px] mt-1 text-right ${isMyMessage ? 'text-blue-100' : 'text-gray-400'}`}>
+                      {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </ScrollToBottom>
         )}
       </div>
 
-      {previewUrl && (
-          <div className="px-4 py-2 bg-gray-100 border-t flex items-center relative">
-              <img src={previewUrl} className="h-20 w-auto rounded border"/>
-              <button onClick={clearImage} className="absolute top-0 left-20 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">✕</button>
-              {isUploading && <span className="ml-3 text-blue-600 animate-pulse">Uploading...</span>}
-          </div>
-      )}
+      <div className="p-4 bg-white border-t border-gray-200 relative">
 
-      <div className="p-4 bg-gray-100 border-t flex gap-2 items-center">
-        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect}/>
-        <button onClick={() => fileInputRef.current.click()} className="text-gray-500 hover:text-blue-600 p-2">📎</button>
-        <input 
-            type="text"
-            className="flex-1 p-3 border rounded focus:outline-blue-500"
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={sendMessage}
-            disabled={isUploading}
-        />
-        <button onClick={sendMessage} disabled={isUploading} className="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700 disabled:bg-gray-400">
-            {isUploading ? '...' : 'Send'}
-        </button>
+        {previewUrl && (
+          <div className="absolute bottom-full left-4 mb-2 bg-white p-2 rounded-lg shadow-lg border border-gray-200 animate-fade-in-up">
+            <div className="relative">
+              <img src={previewUrl} className="h-24 w-auto rounded-md object-cover" />
+              <button
+                onClick={clearImage}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-end gap-2">
+          <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
+
+          <button
+            onClick={() => fileInputRef.current.click()}
+            className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+            title="Attach Image"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
+
+          <div className="flex-1 bg-gray-100 rounded-3xl flex items-center px-4 py-1 focus-within:ring-2 focus-within:ring-blue-300 focus-within:bg-white transition-all">
+            <input
+              type="text"
+              className="flex-1 bg-transparent py-3 border-none focus:ring-0 text-gray-700 placeholder-gray-400"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage(e)}
+              disabled={isUploading}
+            />
+          </div>
+
+          <button
+            onClick={sendMessage}
+            disabled={isUploading || (!newMessage && !selectedFile)}
+            className={`p-3 rounded-full transition-all transform hover:scale-105 shadow-md flex items-center justify-center ${(newMessage || selectedFile) && !isUploading
+                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+          >
+            {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
+          </button>
+        </div>
       </div>
     </div>
   );
