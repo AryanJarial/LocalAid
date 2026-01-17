@@ -10,6 +10,11 @@ const Profile = () => {
 
   const [uploading, setUploading] = useState(false);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [targetPost, setTargetPost] = useState(null); // The post being completed
+  const [chatContacts, setChatContacts] = useState([]); // People to choose from
+  const [selectedHelper, setSelectedHelper] = useState("");
+
   useEffect(() => {
     const fetchMyPosts = async () => {
       try {
@@ -31,6 +36,64 @@ const Profile = () => {
       fetchMyPosts();
     }
   }, [user]);
+
+  const fetchContacts = async () => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      const { data } = await axios.get('/api/chat', config);
+      
+      // Extract the *other* person from each chat conversation
+      const contacts = data.map(chat => {
+        return chat.members.find(m => m._id !== user._id) || chat.members[0];
+      });
+      
+      // Remove duplicates (unique users)
+      const uniqueContacts = [...new Map(contacts.map(item => [item['_id'], item])).values()];
+      
+      setChatContacts(uniqueContacts);
+    } catch (error) {
+      console.error("Failed to load contacts", error);
+    }
+  };
+
+  // 3. Handle Opening the Modal
+  const openFulfillModal = (post) => {
+    setTargetPost(post);
+    setIsModalOpen(true);
+    fetchContacts(); // Load the list of people
+  };
+
+  // 4. Handle Submitting the Completion
+  const submitFulfillment = async () => {
+    if (!selectedHelper) return alert("Please select who helped you!");
+
+    try {
+        const config = { headers: { Authorization: `Bearer ${user.token}` } };
+        
+        // Call the API from Step 6.2
+        const { data } = await axios.put(
+            `/api/posts/${targetPost._id}/fulfill`, 
+            { helperId: selectedHelper }, 
+            config
+        );
+
+        // Update Local State (UI)
+        const updatedPosts = myPosts.map((p) => 
+            p._id === targetPost._id ? { ...p, status: 'fulfilled', fulfilledBy: selectedHelper } : p
+        );
+        setMyPosts(updatedPosts);
+        
+        // Close Modal
+        setIsModalOpen(false);
+        setTargetPost(null);
+        setSelectedHelper("");
+        alert("Post marked as completed! 10 Karma points awarded.");
+
+    } catch (error) {
+        console.error(error);
+        alert(error.response?.data?.message || "Something went wrong");
+    }
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -135,6 +198,12 @@ const Profile = () => {
             <div key={post._id} className="bg-white p-4 rounded shadow-sm border border-gray-200 flex justify-between items-center">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
+                      {post.status === 'fulfilled' ? (
+                            <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-bold">✓ COMPLETED</span>
+                        ) : (
+                            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-bold">OPEN</span>
+                        )}
+
                         <span className={`text-xs font-bold px-2 py-0.5 rounded uppercase ${
                             post.type === 'request' ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'
                         }`}>
@@ -148,16 +217,73 @@ const Profile = () => {
                     <p className="text-gray-600 text-sm truncate w-64 sm:w-96">{post.description}</p>
                 </div>
                 
-                <button 
-                    onClick={() => handleDelete(post._id)}
-                    className="text-red-500 hover:text-red-700 text-sm font-bold border border-red-200 hover:border-red-500 px-3 py-1 rounded transition-colors"
-                >
-                    Delete
-                </button>
+                <div className="flex gap-3">
+                    {/* MARK COMPLETED BUTTON (Only for open posts) */}
+                    {post.status === 'open' && (
+                        <button 
+                            onClick={() => openFulfillModal(post)}
+                            className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-3 py-1 rounded transition-colors"
+                        >
+                            Mark Completed
+                        </button>
+                    )}
+
+                    <button 
+                        onClick={() => handleDelete(post._id)}
+                        className="text-red-500 hover:text-red-700 text-sm font-bold border border-red-200 hover:border-red-500 px-3 py-1 rounded transition-colors"
+                    >
+                        Delete
+                    </button>
+                </div>
             </div>
           ))}
         </div>
       )}
+
+      {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                  <h3 className="text-xl font-bold mb-2">Who helped you?</h3>
+                  <p className="text-sm text-gray-600 mb-4">Select the user who helped you with <strong>"{targetPost?.title}"</strong>. They will receive +10 Karma points.</p>
+
+                  {/* Helper List */}
+                  <div className="max-h-60 overflow-y-auto border border-gray-200 rounded mb-4">
+                      {chatContacts.length === 0 ? (
+                          <p className="p-4 text-center text-gray-500 text-sm">No recent chat contacts found.</p>
+                      ) : (
+                          chatContacts.map(contact => (
+                              <div 
+                                key={contact._id} 
+                                onClick={() => setSelectedHelper(contact._id)}
+                                className={`flex items-center p-3 cursor-pointer border-b hover:bg-gray-50 ${selectedHelper === contact._id ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
+                              >
+                                  <img src={contact.profilePicture} className="w-8 h-8 rounded-full mr-3 object-cover" alt="User"/>
+                                  <span className="font-semibold text-gray-700">{contact.name}</span>
+                              </div>
+                          ))
+                      )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end gap-3">
+                      <button 
+                        onClick={() => setIsModalOpen(false)}
+                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                        onClick={submitFulfillment}
+                        disabled={!selectedHelper}
+                        className={`px-4 py-2 rounded text-white font-bold ${!selectedHelper ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                      >
+                          Confirm & Award Karma
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
     </div>
   );
 };
