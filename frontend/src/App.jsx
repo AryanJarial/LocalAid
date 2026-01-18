@@ -7,6 +7,7 @@ import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
 import 'leaflet/dist/leaflet.css';
 import ChatPage from './pages/ChatPage.jsx';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -17,9 +18,32 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/create-post" element={<CreatePost />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route
+            path="/create-post"
+            element={
+              <ProtectedRoute>
+                <CreatePost />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>
