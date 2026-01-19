@@ -74,81 +74,124 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Create New Post</h2>
+    <div className="h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 flex items-center justify-center pt-24 pb-4 px-4 overflow-hidden">
       
-      {error && <div className="bg-red-100 text-red-700 p-2 mb-4 rounded">{error}</div>}
+      <div className="w-full max-w-5xl h-full max-h-[600px] grid md:grid-cols-2 gap-4 items-center">
+        
+        <div className="bg-white rounded-3xl shadow-2xl p-6 h-full flex flex-col justify-center relative animate-fade-in-up">
+          
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-6 bg-purple-600 rounded"></div>
+              <span className="font-bold text-gray-800 text-lg">LocalAid</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">Create Post</h2>
+          </div>
+          
+          {error && <div className="bg-red-50 text-red-700 p-2 mb-2 rounded text-xs">{error}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Title</label>
-          <input
-            type="text"
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="e.g., Need O-ve Blood urgently"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
+          <form onSubmit={handleSubmit} className="space-y-3">
+            
+            <div>
+              <label className="block text-gray-600 font-bold mb-1 text-xs uppercase">Title</label>
+              <input
+                type="text"
+                className="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg focus:bg-white focus:border-purple-500 focus:outline-none transition-all text-sm"
+                placeholder="e.g., Need O-ve Blood"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-600 font-bold mb-1 text-xs uppercase">Description</label>
+              <textarea
+                className="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg focus:bg-white focus:border-purple-500 focus:outline-none transition-all resize-none text-sm h-20"
+                placeholder="Details..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              ></textarea>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+                <div>
+                    <label className="block text-gray-600 font-bold mb-1 text-xs uppercase">Type</label>
+                    <select
+                        className="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg focus:bg-white focus:border-purple-500 focus:outline-none text-sm cursor-pointer"
+                        value={type}
+                        onChange={(e) => setType(e.target.value)}
+                    >
+                        <option value="request">🔴 Request</option>
+                        <option value="offer">🟢 Offer</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-gray-600 font-bold mb-1 text-xs uppercase">Category</label>
+                    <select
+                        className="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg focus:bg-white focus:border-purple-500 focus:outline-none text-sm cursor-pointer"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                    >
+                        <option value="General">🌐 General</option>
+                        <option value="Medical">🏥 Medical</option>
+                        <option value="Food">🍽️ Food</option>
+                        <option value="Education">📚 Education</option>
+                        <option value="Tools">🔧 Tools</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className={`p-2 rounded-lg border flex items-center gap-3 transition-colors ${
+                location.lat ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'
+            }`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${
+                  location.lat ? 'bg-green-100' : 'bg-yellow-100 animate-pulse'
+              }`}>
+                  {location.lat ? '📍' : '📡'}
+              </div>
+              <div className="flex-1">
+                  <p className="font-bold text-gray-700 text-xs">
+                    {location.lat ? 'Location Locked' : 'Detecting...'}
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    {location.lat ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : locationStatus}
+                  </p>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className={`w-full text-white py-3 rounded-xl font-bold text-sm transition-all transform flex items-center justify-center gap-2 shadow-md ${
+                location.lat 
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:scale-[1.02]' 
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
+              disabled={!location.lat}
+            >
+              {location.lat ? '🚀 Post Now' : '⏳ Waiting...'}
+            </button>
+
+          </form>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Description</label>
-          <textarea
-            className="w-full p-2 border border-gray-300 rounded h-24"
-            placeholder="Describe what you need or what you are offering..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          ></textarea>
+        <div className="hidden md:block h-full relative">
+           <div className="relative h-full w-full rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white">
+                <img 
+                    src="/createPost.png" 
+                    alt="Community Help" 
+                    className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-20 text-white">
+                    <h3 className="text-2xl font-bold mb-1">Stronger Together.</h3>
+                    <p className="text-white/80 text-sm">Help your neighbors today.</p>
+                </div>
+           </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Type</label>
-          <select
-            className="w-full p-2 border border-gray-300 rounded"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="request">Request (I need help)</option>
-            <option value="offer">Offer (I want to help)</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Category</label>
-          <select
-            className="w-full p-2 border border-gray-300 rounded"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="General">General</option>
-            <option value="Medical">Medical / Blood</option>
-            <option value="Food">Food / Rations</option>
-            <option value="Education">Education / Books</option>
-            <option value="Tools">Tools / Equipment</option>
-          </select>
-        </div>
-
-        <div className="mb-6 p-3 bg-gray-100 rounded text-sm text-gray-600">
-          📍 Status: <strong>{locationStatus}</strong>
-          {location.lat && (
-            <span className="block text-xs mt-1">
-              (Lat: {location.lat.toFixed(4)}, Lng: {location.lng.toFixed(4)})
-            </span>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className={`w-full text-white p-2 rounded font-bold ${
-            location.lat ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-          }`}
-          disabled={!location.lat}
-        >
-          Post Now
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
