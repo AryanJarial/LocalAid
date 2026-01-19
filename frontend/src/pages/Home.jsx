@@ -108,7 +108,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cyan-300 via-teal-200 to-green-200">
+    <div className="min-h-screen bg-gradient-to-b from-cyan-300 via-teal-200 to-green-200 pt-25">
       
       <div className="relative overflow-hidden bg-gradient-to-br from-cyan-400 to-teal-300 pb-20">
         <div className="absolute top-10 left-10 w-24 h-12 bg-white/40 rounded-full blur-sm"></div>
