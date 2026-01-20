@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
 import { io } from 'socket.io-client';
+import logoImage from '/Logo.png';
 
 const ENDPOINT = "http://localhost:5000";
 
@@ -42,10 +43,14 @@ const Navbar = () => {
         <div className="container mx-auto px-6 py-3"> {/* Slightly reduced py for sleeker look */}
           <div className="flex justify-between items-center relative">
             
-            <Link to="/" className="flex items-center space-x-2 group z-10">
-              <div className={`${logoColorClass} text-3xl font-bold transform group-hover:scale-110 transition-transform`}>
-                🤝
-              </div>
+            <Link to="/" className="flex items-center space-x-3 group z-10">
+              {/* 2. REPLACED EMOJI WITH IMAGE TAG */}
+              <img 
+                src={logoImage} 
+                alt="LocalAid Logo" 
+                className="h-10 w-10 rounded-full object-cover shadow-sm transform group-hover:scale-110 transition-transform duration-300"
+              />
+              
               <span className={`text-2xl font-bold ${user ? "text-gray-800" : "text-white"} group-hover:opacity-90 transition-colors`}>
                 LocalAid
               </span>
