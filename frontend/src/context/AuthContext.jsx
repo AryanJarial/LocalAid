@@ -1,10 +1,15 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 const AuthContext = createContext();
+const ENDPOINT = "http://localhost:5000";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [notification, setNotification] = useState([]);
+
+  const activeChatRef = useRef(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -12,6 +17,32 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const socket = io(ENDPOINT);
+      socket.emit("setup", user);
+
+      socket.on("message received", (newMessageReceived) => {
+        if (!newMessageReceived.sender || newMessageReceived.sender._id === user._id) {
+            return;
+        }
+
+        const msgChatId = newMessageReceived.chat?._id || newMessageReceived.chat || 
+                          newMessageReceived.conversationId?._id || newMessageReceived.conversationId;
+
+        if (activeChatRef.current === msgChatId) {
+            return; 
+        }
+
+        setNotification((prev) => [newMessageReceived, ...prev]);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [user]);
 
   const login = async (email, password) => {
     try {
@@ -44,6 +75,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("user");
     setUser(null);
+    setNotification([]);
+    activeChatRef.current = null;
     window.location.href = '/';
   };
 
@@ -54,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, notification, setNotification, activeChatRef }}>
       {children}
     </AuthContext.Provider>
   );
