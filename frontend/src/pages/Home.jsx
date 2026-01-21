@@ -156,39 +156,56 @@ const Home = () => {
 
       <div className="container mx-auto px-4 -mt-10 relative z-20">
 
-        <div className="flex flex-col lg:flex-row gap-6 mb-2 items-stretch">
-          <div className="w-full lg:w-1/2">
-            {userLocation && <TrendBanner userLocation={userLocation} />}
-          </div>
-          <div className="w-full lg:w-1/2 bg-white/95 backdrop-blur-sm p-6 rounded-3xl shadow-xl border border-white/50 h-full flex flex-col justify-center">
-            <form onSubmit={handleSearch} className="flex flex-col xl:flex-row gap-3">
-              <div className="flex-1 relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium transition-all"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2">
-                <select
-                  className="flex-1 px-4 py-3 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-bold text-gray-700 cursor-pointer transition-all text-sm"
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                >
-                  <option value="all">🌍 All</option>
-                  <option value="request">🔴 Request</option>
-                  <option value="offer">🟢 Offer</option>
-                </select>
-                <button type="submit" className="bg-black text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg whitespace-nowrap">
-                  Search
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        {/* Trend + Search Section */}
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch min-h-[180px]">
+
+  {/* Trend Banner */}
+  <div className="h-full">
+    {userLocation && <TrendBanner userLocation={userLocation} />}
+  </div>
+
+  {/* Search Bar */}
+  <div className="h-37 bg-white/95 backdrop-blur-sm p-4 rounded-3xl shadow-xl border border-white/50 flex flex-col justify-between">
+
+    <form onSubmit={handleSearch} className="flex flex-col gap-2">
+
+      {/* Search Input */}
+      <div className="relative">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+        <input
+          type="text"
+          placeholder="Search nearby requests or offers..."
+          className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium transition-all"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* Filter + Button */}
+      <div className="flex gap-3">
+        <select
+          className="flex-1 px-4 py-3 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-bold text-gray-700 cursor-pointer"
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+        >
+          <option value="all">🌍 All</option>
+          <option value="request">🔴 Request</option>
+          <option value="offer">🟢 Offer</option>
+        </select>
+
+        <button
+          type="submit"
+          className="bg-black text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
+        >
+          Search
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
 
         {locationError && (
           <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-6 rounded-lg shadow">
