@@ -85,6 +85,10 @@ const deletePost = async (req, res) => {
     if (post) {
       if (post.user.toString() === req.user._id.toString()) {
         await post.deleteOne();
+        const io = req.app.get('socketio');
+        if (io) {
+            io.emit('post-deleted', req.params.id);
+        }
         res.json({ message: 'Post removed' });
       } else {
         res.status(401).json({ message: 'Not authorized to delete this post' });
@@ -209,11 +213,15 @@ const fulfillPost = async (req, res) => {
     if (post.status === 'fulfilled') {
       return res.status(400).json({ message: 'Post is already fulfilled' });
     }
-
+    const io = req.app.get('socketio');
     // 3. Update the Post
     post.status = 'fulfilled';
     post.fulfilledBy = helperId;
     await post.save();
+
+    if (io) {
+        io.emit('post-completed', post._id); 
+    }
 
     // 4. Award Karma to the Helper
     if (helperId) {
@@ -223,7 +231,6 @@ const fulfillPost = async (req, res) => {
         { new: true }
       );
 
-      const io = req.app.get('socketio');
       if (io && helper) {
 
         io.to(helperId.toString()).emit('notification', {
