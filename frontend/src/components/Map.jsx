@@ -1,6 +1,34 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import '../utils/mapIcons'; 
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css'; // Ensure Leaflet CSS is imported
+
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const greenIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const defaultIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 const RecenterController = ({ center, trigger }) => {
   const map = useMap();
@@ -55,32 +83,46 @@ const Map = ({ posts, userLocation }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
+        {/* User Location Marker (Blue) */}
         {userLocation && (
-           <Marker position={[userLocation.lat, userLocation.lng]}>
+           <Marker 
+             position={[userLocation.lat, userLocation.lng]}
+             icon={defaultIcon} 
+           >
              <Popup>
                <strong>You are here</strong>
              </Popup>
            </Marker>
         )}
 
-        {posts.map((post) => (
-          <Marker 
-            key={post._id} 
-            position={[post.location.coordinates[1], post.location.coordinates[0]]} 
-          >
-            <Popup>
-              <div className="text-center">
-                <strong className="block text-sm">{post.title}</strong>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                   post.type === 'request' ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'
-                }`}>
-                  {post.type}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">{post.category}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {/* Render Posts (Filtered & Color Coded) */}
+        {posts
+          // 2. FILTER: Remove completed posts from the map
+          .filter(post => post.status !== 'fulfilled')
+          .map((post) => {
+            // 3. COLOR LOGIC: Request=Red, Offer=Green
+            const icon = post.type === 'request' ? redIcon : greenIcon;
+
+            return (
+              <Marker 
+                key={post._id} 
+                position={[post.location.coordinates[1], post.location.coordinates[0]]} 
+                icon={icon} 
+              >
+                <Popup>
+                  <div className="text-center">
+                    <strong className="block text-sm">{post.title}</strong>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                       post.type === 'request' ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'
+                    }`}>
+                      {post.type}
+                    </span>
+                    <p className="text-xs text-gray-500 mt-1">{post.category}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+        })}
       </MapContainer>
     </div>
   );
