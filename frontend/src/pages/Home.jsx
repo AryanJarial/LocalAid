@@ -6,7 +6,8 @@ import { io } from 'socket.io-client';
 import Map from '../components/Map';
 import TrendBanner from '../components/TrendBanner';
 import LandingPage from '../components/LandingPage';
-import { Calendar, User } from 'lucide-react';
+import ImageViewer from '../components/ImageViewer';
+import { Calendar, User ,Image as ImageIcon} from 'lucide-react';
 
 const getCategoryStyle = (category) => {
   switch (category) {
@@ -33,6 +34,9 @@ const Home = () => {
   const [incomingPost, setIncomingPost] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+
+  const [viewerImages, setViewerImages] = useState(null);
+
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -165,54 +169,54 @@ const Home = () => {
       <div className="container mx-auto px-4 -mt-10 relative z-20">
 
         {/* Trend + Search Section */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch min-h-[180px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch min-h-[180px]">
 
-  {/* Trend Banner */}
-  <div className="h-full">
-    {userLocation && <TrendBanner userLocation={userLocation} />}
-  </div>
+          {/* Trend Banner */}
+          <div className="h-full">
+            {userLocation && <TrendBanner userLocation={userLocation} />}
+          </div>
 
-  {/* Search Bar */}
-  <div className="h-37 bg-white/95 backdrop-blur-sm p-4 rounded-3xl shadow-xl border border-white/50 flex flex-col justify-between">
+          {/* Search Bar */}
+          <div className="h-37 bg-white/95 backdrop-blur-sm p-4 rounded-3xl shadow-xl border border-white/50 flex flex-col justify-between">
 
-    <form onSubmit={handleSearch} className="flex flex-col gap-2">
+            <form onSubmit={handleSearch} className="flex flex-col gap-2">
 
-      {/* Search Input */}
-      <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
-        <input
-          type="text"
-          placeholder="Search nearby requests or offers..."
-          className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium transition-all"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+              {/* Search Input */}
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search nearby requests or offers..."
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium transition-all"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-      {/* Filter + Button */}
-      <div className="flex gap-3">
-        <select
-          className="flex-1 px-4 py-3 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-bold text-gray-700 cursor-pointer"
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-        >
-          <option value="all">🌍 All</option>
-          <option value="request">🔴 Request</option>
-          <option value="offer">🟢 Offer</option>
-        </select>
+              {/* Filter + Button */}
+              <div className="flex gap-3">
+                <select
+                  className="flex-1 px-4 py-3 bg-gray-50 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 font-bold text-gray-700 cursor-pointer"
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                >
+                  <option value="all">🌍 All</option>
+                  <option value="request">🔴 Request</option>
+                  <option value="offer">🟢 Offer</option>
+                </select>
 
-        <button
-          type="submit"
-          className="bg-black text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
-        >
-          Search
-        </button>
-      </div>
+                <button
+                  type="submit"
+                  className="bg-black text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
+                >
+                  Search
+                </button>
+              </div>
 
-    </form>
-  </div>
+            </form>
+          </div>
 
-</div>
+        </div>
 
 
         {locationError && (
@@ -241,84 +245,102 @@ const Home = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
             {posts
-            .filter(post => post.status !== 'fulfilled')
-            .map((post) => {
-              const style = getCategoryStyle(post.category);
-              const karma = post.user?.karmaPoints || 0;
-              const trustPercentage = Math.min(karma, 100);
+              .filter(post => post.status !== 'fulfilled')
+              .map((post) => {
+                const style = getCategoryStyle(post.category);
+                const karma = post.user?.karmaPoints || 0;
+                const trustPercentage = Math.min(karma, 100);
 
-              return (
-                <div key={post._id} className={`relative p-8 rounded-[2.5rem] ${style.bg} transition-all duration-300 hover:-translate-y-2 hover:shadow-xl group`}>
+                return (
+                  <div key={post._id} className={`relative p-8 rounded-[2.5rem] ${style.bg} transition-all duration-300 hover:-translate-y-2 hover:shadow-xl group`}>
 
-                  {/* Card Header */}
-                  <div className="flex justify-between items-start mb-6">
-                    <span className="bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full text-xs font-extrabold text-gray-800 uppercase tracking-wider shadow-sm">
-                      {style.tag}
-                    </span>
-                    <div className="text-6xl filter drop-shadow-md transform rotate-12 group-hover:rotate-6 transition-transform duration-300 cursor-default select-none">
-                      {style.emoji}
-                    </div>
-                  </div>
-
-                  {/* Card Content */}
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-extrabold text-gray-900 mb-3 leading-tight">{post.title}</h3>
-                    <p className="text-gray-600 font-medium text-sm line-clamp-2 leading-relaxed h-10">{post.description}</p>
-                  </div>
-
-                  {/* --- UPDATED: PROFILE PICTURE + BADGES --- */}
-                  <div className="flex items-center justify-between mb-6">
-                    {/* User Profile Pic & Name */}
-                    <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
-                      <img
-                        src={post.user?.profilePicture || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                        alt={post.user?.name || "User"}
-                        className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
-                      />
-                      <span className="truncate max-w-[100px]">{post.user?.name}</span>
+                    {/* Card Header */}
+                    <div className="flex justify-between items-start mb-6">
+                      <span className="bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full text-xs font-extrabold text-gray-800 uppercase tracking-wider shadow-sm">
+                        {style.tag}
+                      </span>
+                      <div className="text-6xl filter drop-shadow-md transform rotate-12 group-hover:rotate-6 transition-transform duration-300 cursor-default select-none">
+                        {style.emoji}
+                      </div>
                     </div>
 
-                    {/* Type Badge */}
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${post.type === 'request'
-                      ? 'bg-red-50 text-red-600 border-red-200'
-                      : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                      }`}>
-                      {post.type === 'request' ? '🔴 Requesting' : '🟢 Offering'}
-                    </span>
-                  </div>
+                    {/* Card Content */}
+                    <div className="mb-6">
+                      <h3 className="text-2xl font-extrabold text-gray-900 mb-3 leading-tight">{post.title}</h3>
+                      <p className="text-gray-600 font-medium text-sm line-clamp-2 leading-relaxed h-10">{post.description}</p>
+                    </div>
 
-                  {/* Trust Score Bar */}
-                  <div className="mb-8">
-                    <div className="flex justify-between items-end mb-1">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Help Score</span>
-                      <span className="text-[10px] font-bold text-gray-500">{karma} Karma</span>
-                    </div>
-                    <div className="w-full bg-black/5 h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className="bg-black/80 h-full rounded-full transition-all duration-700 ease-out"
-                        style={{ width: `${trustPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                    {/* --- UPDATED: PROFILE PICTURE + BADGES --- */}
+                    <div className="flex items-center justify-between mb-6">
+                      {/* User Profile Pic & Name */}
+                      <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                        <img
+                          src={post.user?.profilePicture || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                          alt={post.user?.name || "User"}
+                          className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                        />
+                        <span className="truncate max-w-[100px]">{post.user?.name}</span>
+                      </div>
 
-                  {/* Card Footer */}
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                      {/* Type Badge */}
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${post.type === 'request'
+                        ? 'bg-red-50 text-red-600 border-red-200'
+                        : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                        }`}>
+                        {post.type === 'request' ? '🔴 Requesting' : '🟢 Offering'}
+                      </span>
                     </div>
-                    {user && post.user?._id !== user._id ? (
-                      <Link to="/chat" state={{ userId: post.user._id }} className="bg-black text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-800 transition-transform transform hover:scale-105 shadow-lg flex items-center gap-2">Message</Link>
-                    ) : (
-                      <span className="bg-white/50 text-gray-400 px-6 py-3 rounded-full font-bold text-sm border border-white/50">You</span>
-                    )}
+
+                    {/* Trust Score Bar */}
+                    <div className="mb-8">
+                      <div className="flex justify-between items-end mb-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Help Score</span>
+                        <span className="text-[10px] font-bold text-gray-500">{karma} Karma</span>
+                      </div>
+                      <div className="w-full bg-black/5 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-black/80 h-full rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${trustPercentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Card Footer */}
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                      {user && post.user?._id !== user._id ? (
+                        <Link to="/chat" state={{ userId: post.user._id }} className="bg-black text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-800 transition-transform transform hover:scale-105 shadow-lg flex items-center gap-2">Message</Link>
+                      ) : (
+                        <span className="bg-white/50 text-gray-400 px-6 py-3 rounded-full font-bold text-sm border border-white/50">You</span>
+                      )}
+                      {post.images?.length > 0 && (
+                        <button
+                          onClick={() => setViewerImages(post.images)}
+                          className="group flex items-center gap-2 bg-white/80 hover:bg-white backdrop-blur-sm px-4 py-2 rounded-xl text-xs font-bold text-gray-700 shadow-sm border border-gray-100 hover:shadow-md hover:text-purple-600 hover:-translate-y-0.5 transition-all duration-300"
+                        >
+                          <div className="bg-purple-100 p-1 rounded-md group-hover:bg-purple-200 transition-colors">
+                            <ImageIcon className="w-3.5 h-3.5 text-purple-600" />
+                          </div>
+                          <span>View {post.images.length} Photos</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
       </div>
+      {viewerImages && (
+        <ImageViewer
+          images={viewerImages}
+          onClose={() => setViewerImages(null)}
+        />
+      )}
+
     </div>
   );
 };
