@@ -56,7 +56,7 @@ const Navbar = () => {
               </span>
             </Link>
 
-            <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
+            <div className="hidden md:flex items-center space-x-6 lg:space-x-8 mx-4">
               <Link 
                 to="/" 
                 className={`${textColorClass} font-medium transition-colors`}
@@ -113,7 +113,7 @@ const Navbar = () => {
 
                   <Link
                     to="/create-post"
-                    className="hidden lg:inline-flex items-center bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-lg transition-all transform hover:scale-105"
+                    className="inline-flex items-center bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-3 md:px-5 py-2 rounded-full font-bold text-xs md:text-sm shadow-lg transition-all transform hover:scale-105"
                   >
                     <span className="mr-1 text-lg leading-none">+</span> Create
                   </Link>
