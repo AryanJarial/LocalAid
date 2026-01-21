@@ -51,7 +51,7 @@ const TrendBanner = ({ userLocation }) => {
         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-xl"></div>
         <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-white opacity-10 blur-xl"></div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="h-25 z-10 flex flex-col md:flex-row items-center justify-between gap-4">
             
             <div className="flex items-center gap-3">
                 <span className="text-3xl bg-white/20 p-2 rounded-lg shadow-inner">
