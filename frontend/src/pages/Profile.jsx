@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import axios from '../api/axios.js';
 import AuthContext from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { LogOut, Camera, Trash2, CheckCircle, Clock, Edit3, Award, TrendingUp } from 'lucide-react';

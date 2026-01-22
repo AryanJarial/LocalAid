@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axios from '../api/axios.js';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import { io } from 'socket.io-client';
 import { Send, Paperclip, X, Loader2 } from 'lucide-react';
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = import.meta.env.VITE_API_URL || "http://localhost:5000";
 var socket;
 
 const ChatBox = ({ user, selectedChat }) => {

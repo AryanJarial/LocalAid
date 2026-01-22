@@ -15,8 +15,17 @@ connectDB();
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://localaid-frontend.vercel.app" 
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use(express.json()); 
-app.use(cors());
 
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
@@ -30,17 +39,17 @@ app.get('/', (req, res) => {
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
+  pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:5173", 
-    methods: ["GET", "POST"]
-  }
+    origin: allowedOrigins, // Same origins as above
+    credentials: true,
+  },
 });
 
 app.set('socketio', io);
 
 io.on('connection', (socket) => {
-  console.log('Connected to socket.io');
-
+  
   socket.on('setup', (userData) => {
     socket.join(userData._id);
     console.log("User Joined Room:", userData._id);

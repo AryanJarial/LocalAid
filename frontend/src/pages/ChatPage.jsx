@@ -1,12 +1,12 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axios.js';
 import { io } from "socket.io-client";
 import AuthContext from '../context/AuthContext';
 import ChatBox from '../components/ChatBox';
 import { Search, ArrowLeft } from 'lucide-react';
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const ChatPage = () => {
   // 1. Get activeChatRef from Context

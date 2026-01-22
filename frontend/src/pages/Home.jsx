@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import axios from '../api/axios.js';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { io } from 'socket.io-client';

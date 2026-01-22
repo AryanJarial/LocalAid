@@ -4,7 +4,7 @@ import AuthContext from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import logoImage from '/Logo.png';
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const Navbar = () => {
   const { user, updateUser, notification } = useContext(AuthContext);

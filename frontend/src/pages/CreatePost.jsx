@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axios.js';
 import AuthContext from '../context/AuthContext';
 // 1. Import Loader Icon
 import { Loader2 } from 'lucide-react';
