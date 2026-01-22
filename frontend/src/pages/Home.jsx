@@ -9,6 +9,9 @@ import LandingPage from '../components/LandingPage';
 import ImageViewer from '../components/ImageViewer';
 import { Calendar, User ,Image as ImageIcon} from 'lucide-react';
 
+const ENDPOINT = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+
 const getCategoryStyle = (category) => {
   switch (category) {
     case 'Medical':
@@ -58,7 +61,7 @@ const Home = () => {
       }
     );
 
-    const socket = io('http://localhost:5000');
+    const socket = io(ENDPOINT);
     socket.on('new-post', (newPost) => {
       if (user && newPost.user._id !== user._id) {
         if (filterType === 'all' || newPost.type === filterType) {
