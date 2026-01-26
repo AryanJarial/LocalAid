@@ -20,10 +20,24 @@ const allowedOrigins = [
   "https://local-aid.vercel.app" 
 ];
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app')
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json()); 
 
@@ -40,10 +54,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   pingTimeout: 60000,
-  cors: {
-    origin: allowedOrigins, // Same origins as above
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 app.set('socketio', io);
