@@ -2,7 +2,9 @@ import { useState, useContext } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { User, Mail, Lock, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import axios from '../api/axios'
+
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const Register = () => {
   const [name, setName] = useState('');
